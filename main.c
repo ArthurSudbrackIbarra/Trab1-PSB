@@ -8,6 +8,9 @@
 void process();
 void carregaHeader(FILE* fp);
 void carregaImagem(FILE* fp, int largura, int altura);
+
+float maximo(float num1, float num2);
+float minimo(float num1, float num2);
 //void criaImagensTeste();
 
 //
@@ -121,19 +124,54 @@ void process()
         *ptrImage8++ = (unsigned char) finalGreen;
         *ptrImage8++ = (unsigned char) finalBlue;
 
-        /*//Calculando a luminancia dos pixels.
-        float luminancia = 0.299 * finalRed + 0.587 * finalGreen + 0.114 * finalBlue;
+        //Calculando a luminancia dos pixels.
+        int intensidade = (0.299 * finalRed) + (0.587 * finalGreen) + (0.114 * finalBlue);
 
-        //Adicionando a luminancia obtida no vetor responsavel pelo histograma.
-        *ptrHistogram++ = luminancia;
+        //Incrementando o valor na posicao correspondente a luminancia obtida.
+        float atual = ++histogram[intensidade];
 
         //Mantendo o rastreamento do maior valor presente no histograma.
-        if(luminancia > maiorDoHistograma) maiorDoHistograma = luminancia;*/
+        if(atual > maiorDoHistograma) maiorDoHistograma = atual;
+
     }
 
-    /*for(int i = 0; i < HISTSIZE; i++){
+    //Normalizando o histograma.
+    for(int i = 0; i < HISTSIZE; i++){
         histogram[i] = histogram[i]/maiorDoHistograma;
-    }*/
+    }
+
+    int totalBytesImage8 = sizeX * sizeY * 3;
+
+    int maiorDoHistogramaAjustado = -1;
+
+    for(int pos = 0; pos < totalBytesImage8; pos += 3){
+
+        int red = image8[pos];
+        int green = image8[pos+1];
+        int blue = image8[pos+2];
+
+        int intensidade = (0.299 * red) + (0.587 * green) + (0.114 * blue);
+
+        float divisao = (float)(intensidade - minLevel)/(float)(maxLevel - minLevel);
+
+        int intensidadeAjustada = minimo(1.0, maximo(0.0, divisao)) * 255;
+
+        image8[pos] = (red * intensidadeAjustada)/intensidade;
+        image8[pos+1] = (green * intensidadeAjustada)/intensidade;
+        image8[pos+2] = (blue * intensidadeAjustada)/intensidade;
+
+        printf("%d, %d, %d\n", image8[pos], image8[pos+1], image8[pos+2]);
+
+        int atual = ++adjusted[intensidadeAjustada];
+
+        if(atual > maiorDoHistogramaAjustado) maiorDoHistogramaAjustado = atual;
+
+    }
+
+    //Normalizando o histograma ajustado.
+    for(int i = 0; i < HISTSIZE; i++){
+        adjusted[i] = adjusted[i]/maiorDoHistogramaAjustado;
+    }
 
     // Dica: se você precisar de um vetor de floats para armazenar
     // a imagem convertida, etc, use este trecho
@@ -178,6 +216,9 @@ int main(int argc, char** argv)
     //
     // Descomente a linha abaixo APENAS quando isso estiver funcionando!
     //
+    //histogram[0] = 200;
+    //histogram[1] = 1000;
+    //histogram[200] = 690;
     carregaImagem(arq, largura, altura);
     
     // Fecha o arquivo
@@ -256,3 +297,12 @@ void carregaImagem(FILE* fp, int largura, int altura)
     }
 }
 
+float maximo(float num1, float num2) {
+    if(num1 > num2) return num1;
+    return num2;
+}
+
+float minimo(float num1, float num2){  
+    if(num1 < num2 ) return num1;
+    return num2;
+}

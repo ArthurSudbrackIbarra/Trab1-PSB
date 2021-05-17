@@ -161,27 +161,27 @@ void process()
 
         int intensidade = (0.299 * red) + (0.587 * green) + (0.114 * blue);
 
+        if (pos > totalBytesImage8 - 1000) printf("Intensidade: %d\n", intensidade);
+
         float divisao = (float) (intensidade - minLevel)/(maxLevel - minLevel);
 
         int intensidadeAjustada = minimo(1.0, maximo(0.0, divisao)) * 255;
 
-        int correcaoRed = (red * intensidadeAjustada)/intensidade;
-        int correcaoGreen = (green * intensidadeAjustada)/intensidade;
-        int correcaoBlue = (blue * intensidadeAjustada)/intensidade;
+        if (pos > totalBytesImage8 - 1000) printf("Intensidade Ajustada: %d\n", intensidadeAjustada);
 
-        //printf("C RED: %d, C GREEN: %d, C BLUE: %d\n", correcaoRed, correcaoGreen, correcaoBlue);
+        float correcaoRed = (float) (red * intensidadeAjustada)/intensidade;
+        float correcaoGreen = (float) (green * intensidadeAjustada)/intensidade;
+        float correcaoBlue = (float) (blue * intensidadeAjustada)/intensidade;
 
-        *ptr2Image8 = (unsigned char) correcaoRed;
-        printf("POSICAO 1: %c\n", *ptrImage8);
-        ptrImage8++;
-        *ptr2Image8 = (unsigned char) correcaoGreen;
-        printf("POSICAO 2: %c\n", *ptrImage8);
-        ptrImage8++;
-        *ptr2Image8 = (unsigned char) correcaoBlue;
-        printf("POSICAO 3: %c\n\n", *ptrImage8);
-        ptrImage8++;
+        int finalCorrecaoRed = (int) correcaoRed;
+        int finalCorrecaoGreen = (int) correcaoGreen;
+        int finalCorrecaoBlue = (int) correcaoBlue;
 
-        //printf("%d, %d, %d\n", image8[pos], image8[pos+1], image8[pos+2]);
+        if (pos > totalBytesImage8 - 1000) printf("C RED: %d, C GREEN: %d, C BLUE: %d\n", finalCorrecaoRed, finalCorrecaoGreen, finalCorrecaoBlue);
+
+        *ptr2Image8++ = (unsigned char) finalCorrecaoRed;
+        *ptr2Image8++ = (unsigned char) finalCorrecaoGreen;
+        *ptr2Image8++ = (unsigned char) finalCorrecaoBlue;
 
         int atual = ++adjusted[intensidadeAjustada];
 

@@ -57,6 +57,12 @@ void process()
     // SUBSTITUA este código pelos algoritmos a serem implementados
     //
 
+    //Zerando os vetores histogram e adjusted.
+    for(int i = 0; i < HISTSIZE; i++){
+        histogram[i] = 0;
+        adjusted[i] = 0;
+    }
+
     unsigned char* ptrImage = image;
     int totalBytesImage = sizeX * sizeY * 4;
 
@@ -67,7 +73,7 @@ void process()
     float* ptrHistogram = histogram;
     int maiorDoHistograma = -1;
 
-    for(int pos = 0; pos < totalBytesImage; pos += 4){
+    for(int pos = 0; pos < totalBytesImage; pos = pos + 4){
 
         //Obtendo os 4 valores do RGBE.
         int valor1 = *ptrImage++;
@@ -140,27 +146,42 @@ void process()
         histogram[i] = histogram[i]/maiorDoHistograma;
     }
 
+    unsigned char* ptr1Image8 = image8;
+    unsigned char* ptr2Image8 = image8;
+
     int totalBytesImage8 = sizeX * sizeY * 3;
 
     int maiorDoHistogramaAjustado = -1;
 
-    for(int pos = 0; pos < totalBytesImage8; pos += 3){
+    for(int pos = 0; pos < totalBytesImage8; pos = pos + 3){
 
-        int red = image8[pos];
-        int green = image8[pos+1];
-        int blue = image8[pos+2];
+        int red = *ptr1Image8++;
+        int green = *ptr1Image8++;
+        int blue = *ptr1Image8++;
 
         int intensidade = (0.299 * red) + (0.587 * green) + (0.114 * blue);
 
-        float divisao = (float)(intensidade - minLevel)/(float)(maxLevel - minLevel);
+        float divisao = (float) (intensidade - minLevel)/(maxLevel - minLevel);
 
         int intensidadeAjustada = minimo(1.0, maximo(0.0, divisao)) * 255;
 
-        image8[pos] = (red * intensidadeAjustada)/intensidade;
-        image8[pos+1] = (green * intensidadeAjustada)/intensidade;
-        image8[pos+2] = (blue * intensidadeAjustada)/intensidade;
+        int correcaoRed = (red * intensidadeAjustada)/intensidade;
+        int correcaoGreen = (green * intensidadeAjustada)/intensidade;
+        int correcaoBlue = (blue * intensidadeAjustada)/intensidade;
 
-        printf("%d, %d, %d\n", image8[pos], image8[pos+1], image8[pos+2]);
+        //printf("C RED: %d, C GREEN: %d, C BLUE: %d\n", correcaoRed, correcaoGreen, correcaoBlue);
+
+        *ptr2Image8 = (unsigned char) correcaoRed;
+        printf("POSICAO 1: %c\n", *ptrImage8);
+        ptrImage8++;
+        *ptr2Image8 = (unsigned char) correcaoGreen;
+        printf("POSICAO 2: %c\n", *ptrImage8);
+        ptrImage8++;
+        *ptr2Image8 = (unsigned char) correcaoBlue;
+        printf("POSICAO 3: %c\n\n", *ptrImage8);
+        ptrImage8++;
+
+        //printf("%d, %d, %d\n", image8[pos], image8[pos+1], image8[pos+2]);
 
         int atual = ++adjusted[intensidadeAjustada];
 

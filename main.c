@@ -133,7 +133,7 @@ void process()
         //Calculando a luminancia dos pixels.
         int intensidade = (0.299 * finalRed) + (0.587 * finalGreen) + (0.114 * finalBlue);
 
-        //Incrementando o valor na posicao correspondente a luminancia obtida.
+        //Incrementando o valor na posicao correspondente a intensidade obtida.
         float atual = ++histogram[intensidade];
 
         //Mantendo o rastreamento do maior valor presente no histograma.
@@ -155,36 +155,37 @@ void process()
 
     for(int pos = 0; pos < totalBytesImage8; pos = pos + 3){
 
+        //Obtendo os valores Red, Green e Blue, os quais compoem um pixel.
         int red = *ptr1Image8++;
         int green = *ptr1Image8++;
         int blue = *ptr1Image8++;
 
+        //Calculando a intensidade com base nos valores que compoem o pixel.
         int intensidade = (0.299 * red) + (0.587 * green) + (0.114 * blue);
 
-        if (pos > totalBytesImage8 - 1000) printf("Intensidade: %d\n", intensidade);
-
+        //Calculando a intensidade ajustada.
         float divisao = (float) (intensidade - minLevel)/(maxLevel - minLevel);
-
         int intensidadeAjustada = minimo(1.0, maximo(0.0, divisao)) * 255;
 
-        if (pos > totalBytesImage8 - 1000) printf("Intensidade Ajustada: %d\n", intensidadeAjustada);
-
+        //Aplicando a correcao em todos os componentes do pixel.
         float correcaoRed = (float) (red * intensidadeAjustada)/intensidade;
         float correcaoGreen = (float) (green * intensidadeAjustada)/intensidade;
         float correcaoBlue = (float) (blue * intensidadeAjustada)/intensidade;
 
-        int finalCorrecaoRed = (int) correcaoRed;
-        int finalCorrecaoGreen = (int) correcaoGreen;
-        int finalCorrecaoBlue = (int) correcaoBlue;
+        //Garantindo que os valores obtidos nao ultrapassem 255.
+        int finalCorrecaoRed = correcaoRed > 255 ? 255 : (int) correcaoRed;
+        int finalCorrecaoGreen = correcaoGreen > 255 ? 255 : (int) correcaoGreen;
+        int finalCorrecaoBlue = correcaoBlue > 255 ? 255 : (int) correcaoBlue;
 
-        if (pos > totalBytesImage8 - 1000) printf("C RED: %d, C GREEN: %d, C BLUE: %d\n", finalCorrecaoRed, finalCorrecaoGreen, finalCorrecaoBlue);
-
+        //Armazenando os valores obtidos em 'image8'.
         *ptr2Image8++ = (unsigned char) finalCorrecaoRed;
         *ptr2Image8++ = (unsigned char) finalCorrecaoGreen;
         *ptr2Image8++ = (unsigned char) finalCorrecaoBlue;
 
+        //Incrementando o valor na posicao correspondente a intensidade obtida.
         int atual = ++adjusted[intensidadeAjustada];
 
+        //Mantendo o rastreamento do maior valor presente no histograma ajustado.
         if(atual > maiorDoHistogramaAjustado) maiorDoHistogramaAjustado = atual;
 
     }
